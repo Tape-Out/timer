@@ -36,10 +36,10 @@ features:
     default: false
     area:
       points:
-        '1': 536.48
-        '2': 833.28
-        '4': 1810.76
-        '8': 3296.44
+        '1': 483.28
+        '2': 999.88
+        '4': 1796.2
+        '8': 3507.84
       per: channels
 emit:
 - kind: bsv
@@ -61,55 +61,55 @@ deps:
 area:
   base:
     points:
-      '1': 2196.88
-      '2': 2893.8
-      '4': 3830.96
-      '8': 5836.04
+      '1': 2173.92
+      '2': 2738.4
+      '4': 3748.36
+      '8': 5704.44
     per: channels
   margin: 0.0269
   model: points-additive
   error:
     bound: 0.038
     sign: over
-    note: parameter curves stored as measured points, features added on top, then
-      lifted by 0.0269 so that no untested combination predicts under; the worst came
-      in 2.19 percent under before the lift
+    note: parameter curves stored as measured points, features added on top, 
+      then lifted by 0.0269 so that no untested combination predicts under; the 
+      worst came in 2.19 percent under before the lift
   measured:
   - at:
       channels: 1
       capture: false
-    um2: 2196.88
+    um2: 2173.92
   - at:
       channels: 2
       capture: false
-    um2: 2893.8
+    um2: 2738.4
   - at:
       channels: 4
       capture: false
-    um2: 3830.96
+    um2: 3748.36
   - at:
       channels: 8
       capture: false
-    um2: 5836.04
+    um2: 5704.44
   - at:
       channels: 1
       capture: true
-    um2: 2733.36
+    um2: 2657.2
   - at:
       channels: 2
       capture: true
-    um2: 3727.08
+    um2: 3738.28
   - at:
       channels: 4
       capture: true
-    um2: 5641.72
+    um2: 5544.56
   - at:
       channels: 8
       capture: true
-    um2: 9132.48
+    um2: 9212.28
   corner:
     tool: ecc
     pdk: ics55
     freq_mhz: 100
-    measured: '2026-09-09'
-    gen_digest: sha256:70f0bf252f86628e
+    measured: '2026-09-10'
+    gen_digest: sha256:d556ebd631103b0b
