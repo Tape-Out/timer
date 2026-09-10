@@ -22,19 +22,22 @@ regs:
     offset: 0x10
     desc: compare value, one per channel
     array: { count: channels, stride: 4 }
-    fields: [ { name: val, width: 32, sw: rw, hw: r, reset: 0 } ]
+    fields: [ { name: val, width: 32, sw: rw, hw: r, swmod: true, reset: 0 } ]
   - name: capt
     offset: 0x30
     desc: counter latched on the channel input edge
     feature: capture
     array: { count: channels, stride: 4 }
-    fields: [ { name: val, width: 32, sw: r, hw: w, reset: 0 } ]
+    fields: [ { name: val, width: 32, sw: r, hw: w, hweach: true, reset: 0 } ]
+  # capt 是数组，channels 最大 8，占到 0x30..0x4C——中断这两个原来摆在 0x40，
+  # 五路以上就压在 capt[4] 上：软件读 capt[4] 读到中断状态，写 ista 清中断
+  # 顺手改掉 capt[5]。数组后面的东西要按参数上限让开。
   - name: ista
-    offset: 0x40
+    offset: 0x50
     desc: match status, write one to clear
     fields:
       - { name: val, width: 8, sw: rw, onwrite: woclr, hw: r, hwset: true, stickybit: true, reset: 0 }
   - name: ien
-    offset: 0x44
+    offset: 0x54
     desc: match interrupt enable
     fields: [ { name: val, width: 8, sw: rw, hw: r, reset: 0 } ]

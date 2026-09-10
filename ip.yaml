@@ -36,10 +36,10 @@ features:
     default: false
     area:
       points:
-        '1': 483.28
-        '2': 999.88
-        '4': 1796.2
-        '8': 3507.84
+        '1': 548.24
+        '2': 882.28
+        '4': 1746.92
+        '8': 3492.16
       per: channels
 emit:
 - kind: bsv
@@ -61,10 +61,10 @@ deps:
 area:
   base:
     points:
-      '1': 2173.92
-      '2': 2738.4
-      '4': 3748.36
-      '8': 5704.44
+      '1': 1750.56
+      '2': 2429.28
+      '4': 3577.28
+      '8': 5857.32
     per: channels
   margin: 0.0269
   model: points-additive
@@ -78,38 +78,39 @@ area:
   - at:
       channels: 1
       capture: false
-    um2: 2173.92
+    um2: 1750.56
   - at:
       channels: 2
       capture: false
-    um2: 2738.4
+    um2: 2429.28
   - at:
       channels: 4
       capture: false
-    um2: 3748.36
+    um2: 3577.28
   - at:
       channels: 8
       capture: false
-    um2: 5704.44
+    um2: 5857.32
   - at:
       channels: 1
       capture: true
-    um2: 2657.2
+    um2: 2298.8
   - at:
       channels: 2
       capture: true
-    um2: 3738.28
+    um2: 3311.56
   - at:
       channels: 4
       capture: true
-    um2: 5544.56
+    um2: 5324.2
   - at:
       channels: 8
       capture: true
-    um2: 9212.28
+    um2: 9349.48
   corner:
     tool: ecc
     pdk: ics55
     freq_mhz: 100
-    measured: '2026-09-10'
-    gen_digest: sha256:d556ebd631103b0b
+    measured: '2026-09-11'
+    toolchain: bsc 2026.01 · yosys 0.68+195 · ecc 0.1.0a11
+    gen_digest: sha256:0e81bcfacb9363b0

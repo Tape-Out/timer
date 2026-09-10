@@ -41,6 +41,16 @@ capt_chk = (
         "    end",
     ]))
 
+# 位宽跟着 channels 走，字面量别写死宽度
+both_setup = ("      2: cap <= '1;   // 所有通道同一拍一起翻"
+              if capture and ch >= 2 else "      2: noAction;")
+both_chk = ("\n".join([
+    '    if (x.rdata == 0) begin',
+    '      $display("FAIL two edges in one cycle: only the lower channel was captured");',
+    '      bad <= True;',
+    '    end',
+]) if capture and ch >= 2 else "    // 只有一路，或者捕获关着，没有同拍可言")
+
 txt = f'''package Timer{label}Tb;
 
 import RegIf::*;
@@ -54,10 +64,11 @@ Bit#(8) rPRESC = 8'h04;
 Bit#(8) rCNT   = 8'h08;
 Bit#(8) rCMP0  = 8'h10;
 Bit#(8) rCAPT0 = 8'h30;
-Bit#(8) rISTA  = 8'h40;
-Bit#(8) rIEN   = 8'h44;
+Bit#(8) rISTA  = 8'h50;
+Bit#(8) rIEN   = 8'h54;
 
-typedef enum {{ Setup, Count, Match, Clear, Capture, CheckCapt, Done }}
+typedef enum {{ Setup, Count, Match, Clear, Past, CheckPast, PastClr,
+               Capture, CheckCapt, Both, CheckBoth, Done }}
   Phase deriving (Bits, Eq);
 
 (* synthesize *)
@@ -129,6 +140,38 @@ module mkTimer{label}Tb(Empty);
 
   rule clearing (ph == Clear);
     wr(rISTA, 32'h1);            // 写一清零
+    ph <= Past;
+    s  <= 0;
+  endrule
+
+  // 设在过去的比较值必须当场响。「读计数、加个差值、写回去」是最常见的用法，
+  // 差值算小了或者写晚一格，比较值就落在计数器身后——比较写成正等于的话，
+  // 那一次要等 32 位计数器绕满一圈才响，100MHz 下是四十三秒。
+  rule pastCmp (ph == Past);
+    case (s)
+      0: wr(rISTA, 32'h1);       // 先清干净
+      1: wr(rCMP0, 5);           // 计数器早过了 20，这个值在它身后
+      default: noAction;
+    endcase
+    if (s > 6) begin ph <= CheckPast; s <= 0; end
+    else s <= s + 1;
+  endrule
+
+  rule checkPast (ph == CheckPast);
+    let x <- t.regs.access(RegReq {{ addr: rISTA, write: False,
+                                    wdata: 0, wstrb: 4'hF }});
+    if (x.rdata[0] == 0) begin
+      $display("FAIL a compare set in the past never fired");
+      bad <= True;
+    end
+    ph <= PastClr;
+    s  <= 0;
+  endrule
+
+  // 刚才那一响要收拾干净：后面还有一条判据看的是「写一清零」，
+  // 起点不干净它就分不出「没清掉」与「清了又响」
+  rule pastClr (ph == PastClr);
+    wr(rISTA, 32'h1);
     ph <= Capture;
     s  <= 0;
   endrule
@@ -154,6 +197,28 @@ module mkTimer{label}Tb(Empty);
     let x <- t.regs.access(RegReq {{ addr: rCAPT0, write: False,
                                     wdata: 0, wstrb: 4'hF }});
 {capt_chk}
+    ph <= Both;
+    s  <= 0;
+  endrule
+
+  // 两路同一拍都来上升沿。按下标写的寄存器接口一拍只锁得住编号最小的那一路，
+  // 其余的连个记号都不留——而捕获单元的全部职责就是给外部边沿打时间戳，
+  // 两个传感器同拍翻转并不稀奇。
+  rule both (ph == Both);
+    case (s)
+      0: cap <= 0;               // 先落下去，才有得升
+{both_setup}
+      default: noAction;
+    endcase
+    if (s > 6) begin ph <= CheckBoth; s <= 0; end
+    else s <= s + 1;
+  endrule
+
+  rule checkBoth (ph == CheckBoth);
+    // 编号最大的那一路：它是最容易被丢掉的
+    let x <- t.regs.access(RegReq {{ addr: rCAPT0 + {(ch - 1) * 4}, write: False,
+                                    wdata: 0, wstrb: 4'hF }});
+{both_chk}
     ph <= Done;
   endrule
 
@@ -163,7 +228,7 @@ module mkTimer{label}Tb(Empty);
       bad <= True;
     end
     if (bad || !sawIrq) $display("FAILED");
-    else $display("PASS timer: counts, compares, clears, captures");
+    else $display("PASS timer: counts, compares even in the past, clears, captures every channel");
     $finish(bad ? 1 : 0);
   endrule
 endmodule
