@@ -56,7 +56,7 @@ txt = f'''package Timer{label}Tb;
 import RegIf::*;
 import Timer::*;
 
-// 由 tb/mktimertb.py 生成，勿手改。
+// 由 htest/mktimertb.py 生成，勿手改。
 // 这一点：channels={ch} capture={capture}
 
 Bit#(8) rCTRL  = 8'h00;
